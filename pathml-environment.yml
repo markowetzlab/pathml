@@ -1,0 +1,21 @@
+name: pathml-env
+channels:
+  - pytorch
+  - conda-forge
+  - defaults
+dependencies:
+  - cudatoolkit=10.0
+  - pip=20.0
+  - python=3.7
+  - pytorch=1.4
+  - torchvision=0.5
+  - tqdm
+  - matplotlib
+  - joblib
+  - scikit-image
+  - pandas
+  - scikit-learn
+  - shapely
+  - pip:
+    - pyvips
+    - albumentations
