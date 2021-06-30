@@ -20,7 +20,7 @@ PathML is best run inside an Anaconda environment. Once you have [installed Anac
 conda env create -f /path/to/pathml/pathml-environment.yml
 conda activate pathml-env
 ```
-Note that `pathml-environment.yml` installs Python version 3.7, PyTorch version 1.4, Torchvision version 0.5, and CUDA version 10.0. Stable versions above these should also work as long as the versions are cross-compatible. Be sure that the CUDA version matches the version installed on your GPU; if not, either update your GPU's CUDA or change the `cudatoolkit` line of \codeword{pathml-environment.yml} to match your GPU's version before creating `pathml-env`.
+Note that `pathml-environment.yml` installs Python version 3.7, PyTorch version 1.4, Torchvision version 0.5, and CUDA version 10.0. Stable versions above these should also work as long as the versions are cross-compatible. Be sure that the CUDA version matches the version installed on your GPU; if not, either update your GPU's CUDA or change the `cudatoolkit` line of `pathml-environment.yml` to match your GPU's version before creating `pathml-env`.
 
 Learning to use PathML
 ----
