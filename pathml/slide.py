@@ -185,7 +185,7 @@ class Slide:
                                              'height': self.tileSize}
         return self
 
-    def getNonOverlappingSegmentationInferenceArray(self, className, aggregationMethod='mean', probabilityThreshold=None, dtype='int', folder=os.getcwd()):#, fillUninferredPixelsWithZeros=True):
+    def getNonOverlappingSegmentationInferenceArray(self, className, aggregationMethod='mean', probabilityThreshold=None, dtype='int', folder=os.getcwd(), verbose=False):#, fillUninferredPixelsWithZeros=True):
         """A function to extract the pixel-wise inference result
         (from inferClassifier()) of a Slide. Tile overlap is "stitched
         together" to produce one mask with the same pixel dimensions as the WSI.
@@ -197,6 +197,7 @@ class Slide:
             probabilityThreshold (float, optional): if defined, this is used as the cutoff above which a pixel is considered part of the class className. This will result in a binary mask of Trues and Falses being created. Default is to return a mask of 0-255 int predictions.
             dtype (string, optional): the data type to store in the output matrix. Options are 'int' for numpy.uint8 (the default), 'float' for numpy.float32. To get a Boolean output using a probability threshold, set a value for probabilityThreshold.
             folder (string, optional): the path to the directory where the scipy.sparse.lil_matrix will be saved. Default is the current working directory.
+            verbose (Boolean, optional): whether to output verbose messages. Default is False.
 
         Example:
             pathml_slide.getNonOverlappingSegmentationInferenceArray('metastasis', folder='path/to/folder')
@@ -245,7 +246,7 @@ class Slide:
                     inference_pixel_counts_array[tile_y:tile_y+self.tileSize, tile_x:tile_x+self.tileSize] = inference_pixel_counts_array[tile_y:tile_y+self.tileSize, tile_x:tile_x+self.tileSize].toarray() + 1
 
                     num_merged_tiles = num_merged_tiles + 1
-                    print('Number of tiles merged:', num_merged_tiles)
+                    if verbose: print('Number of tiles merged:', num_merged_tiles)
                 else:
                     raise ValueError(className+' not present in segmentation predictions.')
 
@@ -1841,7 +1842,7 @@ class Slide:
         of all their pixels. To get a pixel-level probability matrix, use
         getNonOverlappingSegmentationInferenceArray(). The resulting image is saved
         at the following path:
-        folder/fileName/fileName_segmentation_of_classToVisualize.png
+        /folder/fileName/fileName_segmentation_of_classToVisualize.png
 
         Args:
             classToVisualize (string): the class to make an inference map image for. This class must be present in the tile dictionary from inferSegmenter().
