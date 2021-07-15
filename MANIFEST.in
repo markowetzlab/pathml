@@ -1,0 +1,8 @@
+include AUTHORS.md
+include LICENSE
+include README.md
+
+include requirements.txt
+recursive-include pathml/models/*.pt
+recursive-exclude * __pycache__
+recursive-exclude * *.py[co]
