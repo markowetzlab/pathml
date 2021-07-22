@@ -1752,7 +1752,7 @@ class Slide:
         if tissueLevelThreshold:
             if 'tissueLevel' not in self.tileDictionary[list(self.tileDictionary.keys())[0]]:
                 raise PermissionError('Tissue detection must be performed with detectTissue() before tissueLevelThreshold can be defined.')
-            if type(foregroundLevelThreshold) not in [int, float]:
+            if type(tissueLevelThreshold) not in [int, float]:
                 raise ValueError("tissueLevelThreshold must be an int or float")
 
         suitableTileAddresses = []
