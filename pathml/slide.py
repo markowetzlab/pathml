@@ -1369,7 +1369,7 @@ class Slide:
         else:
             return True
 
-    def detectTissue(self, tissueDetectionLevel=1, tissueDetectionTileSize=512, tissueDetectionTileOverlap=0, tissueDetectionUpsampleFactor=4, batchSize=20, overwriteExistingTissueDetection=False, modelStateDictPath='../pathml/pathml/models/deep-tissue-detector_densenet_state-dict.pt', architecture='densenet'):
+    def detectTissue(self, tissueDetectionLevel=1, tissueDetectionTileSize=512, tissueDetectionTileOverlap=0, tissueDetectionUpsampleFactor=4, batchSize=20, numWorkers=16, overwriteExistingTissueDetection=False, modelStateDictPath='../pathml/pathml/models/deep-tissue-detector_densenet_state-dict.pt', architecture='densenet'):
         """A function to apply PathML's built-in deep tissue detector to assign
         artifact, background, and tissue probabilities that sum to one to each tile
         in the tile dictionary. The raw tissue detection map for a WSI is saved into
@@ -1383,6 +1383,7 @@ class Slide:
             tissueDetectionTileOverlap (float, optional): the fraction of a tile's edge length that overlaps the left, right, above, and below tiles. Default is 0.
             tissueDetectionUpsampleFactor (int, optional): the factor why which the WSI should be upsampled when performing tissue detection. Default is 4.
             batchSize (int, optional): the number of tiles per minibatch when inferring on the deep tissue detector. Default is 20.
+            numWorkers (int, optional): the number of workers to use when detecting tissue. Default is 16.
             overwriteExistingTissueDetection (Boolean, optional): whether to overwrite any existing deep tissue detector predictions if they are already present in the tile dictionary. Default is False.
             modelStateDictPath (string, optional): the path to the state dictionary of the deep tissue detector; it must be a 3-class classifier, with the class order as follows: background, artifact, tissue. Default is the path to the state dict of the deep tissue detector build into PathML.
             architecture (string, optional): the name of the architecture that the state dict belongs to. Currently supported architectures include resnet18, inceptionv3, vgg16, vgg16_bn, vgg19, vgg19_bn, densenet, alexnet, and squeezenet. Default is "densenet", which is the architecture of PathML's built-in deep tissue detector.
@@ -1405,7 +1406,7 @@ class Slide:
         print("Detecting tissue of "+self.slideFilePath)
         tissueForegroundSlide = Slide(self.slideFilePath, level=tissueDetectionLevel).setTileProperties(tileSize=tissueDetectionTileSize, tileOverlap=tissueDetectionTileOverlap) # tile size and overlap for tissue detector, not final tiles
         tmpProcessor = Processor(tissueForegroundSlide)
-        tissueForegroundTmp = tmpProcessor.applyModel(tissueDetector(modelStateDictPath=modelStateDictPath, architecture=architecture), batch_size=batchSize, predictionKey='tissue_detector').adoptKeyFromTileDictionary(upsampleFactor=tissueDetectionUpsampleFactor)
+        tissueForegroundTmp = tmpProcessor.applyModel(tissueDetector(modelStateDictPath=modelStateDictPath, architecture=architecture), batch_size=batchSize, predictionKey='tissue_detector', numWorkers=numWorkers).adoptKeyFromTileDictionary(upsampleFactor=tissueDetectionUpsampleFactor)
 
         predictionMap = np.zeros([tissueForegroundTmp.numTilesInY, tissueForegroundTmp.numTilesInX,3])
         for address in tissueForegroundTmp.iterateTiles():
@@ -1501,7 +1502,7 @@ class Slide:
             classNames (list of strings): an alphabetized list of class names.
             dataTransforms (torchvision.transforms.Compose): a PyTorch torchvision.Compose object with the desired data transformations.
             batchSize (int, optional): the number of tiles to use in each inference minibatch.
-            numWorkers (int, optional): the number of workers to use when inferring the model on the WSI
+            numWorkers (int, optional): the number of workers to use when inferring the model on the WSI. Default is 16.
             foregroundLevelThreshold (string or int or float, optional): if defined as an int, only infers trainedModel on tiles with a 0-100 foregroundLevel value less or equal to than the set value (0 is a black tile, 100 is a white tile). Only infers on Otsu's method-passing tiles if set to 'otsu', or triangle algorithm-passing tiles if set to 'triangle'. Default is not to filter on foreground at all.
             tissueLevelThreshold (Boolean, optional): if defined, only infers trainedModel on tiles with a 0 to 1 tissueLevel probability greater than or equal to the set value. Default is False.
             overwriteExistingClassifications (Boolean, optional): whether to overwrite any existing classification inferences if they are already present in the tile dictionary. Default is False.

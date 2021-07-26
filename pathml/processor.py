@@ -13,10 +13,10 @@ class Processor:
         self.__verbose = verbose
         self.__slideObject = slideObject
 
-    def applyModel(self, modelZip, batch_size, predictionKey = 'prediction'):
+    def applyModel(self, modelZip, batch_size, predictionKey = 'prediction', numWorkers=16):
         device, model, data_transforms = modelZip
         pathSlideDataset = WholeSlideImageDataset(self.__slideObject, transform=data_transforms)
-        pathSlideDataloader = torch.utils.data.DataLoader(pathSlideDataset, batch_size=batch_size, shuffle=False, num_workers=16)
+        pathSlideDataloader = torch.utils.data.DataLoader(pathSlideDataset, batch_size=batch_size, shuffle=False, num_workers=numWorkers)
         for inputs in tqdm(pathSlideDataloader):
             inputTile = inputs['image'].to(device)
             output = model(inputTile)
