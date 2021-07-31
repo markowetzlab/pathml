@@ -667,7 +667,10 @@ class Slide:
                         continue
 
                 if annotationClass not in classPolys:
-                    if (negativeClass) and (annotationClass != negativeClass):
+                    if negativeClass:
+                        if (annotationClass != negativeClass):
+                            classPolys[annotationClass] = []
+                    else:
                         classPolys[annotationClass] = []
 
                 annotationTree = annotation.find('Coordinates')
@@ -714,7 +717,11 @@ class Slide:
 
             for annotation in allAnnotations:
                 if annotation['geometry']['type'] != 'Polygon':
-                    raise ValueError('Found annotation that was not a polygon in JSON file')
+                    raise ValueError('Found annotation with initial point ('+
+                        str(annotation['geometry']['coordinates'][0][0][0][0])+
+                        ','+str(annotation['geometry']['coordinates'][0][0][0][1])+
+                        ') in '+annotationClass+
+                        ' class that was not a polygon in JSON file '+annotationFilePath)
 
                 try:
                     annotationClass = annotation['properties']['classification']['name']
@@ -731,7 +738,10 @@ class Slide:
                         continue
 
                 if annotationClass not in classPolys:
-                    if (negativeClass) and (annotationClass != negativeClass):
+                    if negativeClass:
+                        if (annotationClass != negativeClass):
+                            classPolys[annotationClass] = []
+                    else:
                         classPolys[annotationClass] = []
 
                 if len(annotation['geometry']['coordinates']) > 1:
