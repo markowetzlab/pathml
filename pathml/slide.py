@@ -1013,8 +1013,9 @@ class Slide:
         else:
             raise ValueError('tileAnnotationOverlapThreshold must be a dictionary or number greater than 0 and less than or equal to 1')
 
-        if ((type(tissueLevelThreshold) != int) and (type(tissueLevelThreshold) != float)) or ((tissueLevelThreshold <= 0) or (tissueLevelThreshold > 1)):
-            raise ValueError('tissueLevelThreshold must be a number greater than zero and less than or equal to 1')
+        if tissueLevelThreshold:
+            if ((type(tissueLevelThreshold) != int) and (type(tissueLevelThreshold) != float)) or ((tissueLevelThreshold <= 0) or (tissueLevelThreshold > 1)):
+                raise ValueError('tissueLevelThreshold must be a number greater than zero and less than or equal to 1')
 
         # Get tiles to extract
         annotatedTileAddresses = {extractionClass: [] for extractionClass in extractionClasses}
@@ -1230,8 +1231,9 @@ class Slide:
         else:
             id = self.slideFileName
 
-        if ((type(tissueLevelThreshold) != int) and (type(tissueLevelThreshold) != float)) or ((tissueLevelThreshold <= 0) or (tissueLevelThreshold > 1)):
-            raise ValueError('tissueLevelThreshold must be a number greater than zero and less than or equal to 1')
+        if tissueLevelThreshold:
+            if ((type(tissueLevelThreshold) != int) and (type(tissueLevelThreshold) != float)) or ((tissueLevelThreshold <= 0) or (tissueLevelThreshold > 1)):
+                raise ValueError('tissueLevelThreshold must be a number greater than zero and less than or equal to 1')
         if (type(numTilesToExtract) != int) or (numTilesToExtract <= 0):
             raise ValueError('numTilesToExtract must be a integer greater than 0')
 
