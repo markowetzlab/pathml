@@ -940,7 +940,7 @@ class Slide:
             tileDirName (string, optional): what to call the hightest level tile directory that will be created. Default is 'tiles'
             numTilesToExtractPerClass (dict or int or 'all', optional): expected to be positive integer, a dictionary with class names as keys and positive integers as values, or 'all' to extract all suitable tiles for each class. Default is 'all'.
             classesToExtract (string or list of strings, optional): defaults to extracting all classes found in the annotations, but if defined, must be a string or a list of strings of class names.
-            otherClassNames (string or list of strings, optional): if defined, creates an empty class directory alongside the unannotated class directory for each class name in the list (or string) for torch ImageFolder purposes
+            otherClassNames (string or list of strings, optional): if defined, creates an empty class directory alongside the unannotated class directory for each class name in the list (or string) for torch ImageFolder purposes. If set to 'discernFromClassesToExtract', empty class directories will be created for all classes not found in annotations. Default is False.
             extractSegmentationMasks (Boolean, optional): whether to extract a 'masks' directory that is exactly parallel to the 'tiles' directory, and contains binary segmentation mask tiles for each class desired. Pixel values of 255 in these masks appear as white and indicate the presence of the class; pixel values of 0 appear as black and indicate the absence of the class. Default is False.
             tileAnnotationOverlapThreshold (float, optional): a number greater than 0 and less than or equal to 1, or a dictionary of such values, with a key for each class to extract. The numbers specify the minimum fraction of a tile's area that overlaps a given class's annotations for it to be extracted. Default is 0.5.
             foregroundLevelThreshold (string or int or float, optional): if defined as an int, only extracts tiles with a 0-100 foregroundLevel value less or equal to than the set value (0 is a black tile, 100 is a white tile). Only includes Otsu's method-passing tiles if set to 'otsu', or triangle algorithm-passing tiles if set to 'triangle'. Default is not to filter on foreground at all.
@@ -974,6 +974,8 @@ class Slide:
 
         # get classes to extract
         extractionClasses = []
+        if otherClassNames == 'discernFromClassesToExtract':
+            extraClasses = []
         if not classesToExtract:
             for key, value in self.tileDictionary[list(self.tileDictionary.keys())[0]].items():
                 if 'Overlap' in key:
@@ -982,16 +984,27 @@ class Slide:
             extractionClasses = [classToExtract+'Overlap' for classToExtract in classesToExtract]
             for extractionClass in extractionClasses:
                 if extractionClass not in self.tileDictionary[list(self.tileDictionary.keys())[0]]:
-                    raise ValueError(extractionClass+' not found in tile dictionary')
+                    if  otherClassNames == 'discernFromClassesToExtract':
+                        extraClasses.append(extractionClass)
+                    else:
+                        raise ValueError(extractionClass+' not found in tile dictionary')
         elif type(classesToExtract) == str:
             extractionClasses = [classesToExtract+'Overlap']
             if extractionClasses[0] not in self.tileDictionary[list(self.tileDictionary.keys())[0]]:
-                raise ValueError(extractionClasses[0]+' not found in tile dictionary')
+                if otherClassNames == 'discernFromClassesToExtract':
+                    extraClasses.append(extractionClass)
+                else:
+                    raise ValueError(extractionClasses[0]+' not found in tile dictionary')
 
         else:
             raise ValueError("classesToExtract must be a string or list of strings")
+
         extractionClasses = [extractionClass.split('Overlap')[0] for extractionClass in extractionClasses]
-        print('Found '+str(len(extractionClasses))+' class(es) to extract:', extractionClasses)
+        print('Found '+str(len(extractionClasses))+' class(es) to extract in annotations:', extractionClasses)
+
+        if otherClassNames == 'discernFromClassesToExtract':
+            extraClasses = [extraClass.split('Overlap')[0] for extraClass in extraClasses]
+            print('Found '+str(len(extraClasses))+' class(es) to extract in not present in annotations:', extraClasses)
 
         # Convert annotationOverlapThreshold into a dictionary (if necessary)
         annotationOverlapThresholdDict = {}
@@ -1077,7 +1090,15 @@ class Slide:
                     except:
                         raise ValueError(os.path.join(outputDir, 'tiles', id, extractionClass)+' is not a valid path')
                     if otherClassNames:
-                        if type(otherClassNames) == str:
+                        if otherClassNames == 'discernFromClassesToExtract':
+                            for extraClass in extraClasses:
+                                if type(extraClass) != str:
+                                    raise ValueError('Class to extract not found in annotations '+str(extraClass)+' is not a string.')
+                                try:
+                                    os.makedirs(os.path.join(outputDir, 'tiles', id, extraClass), exist_ok=True)
+                                except:
+                                    raise ValueError(os.path.join(outputDir, 'tiles', id, extraClass)+' is not a valid path')
+                        elif type(otherClassNames) == str:
                             try:
                                 os.makedirs(os.path.join(outputDir, 'tiles', id, otherClassNames), exist_ok=True)
                             except:
@@ -1100,7 +1121,15 @@ class Slide:
                         except:
                             raise ValueError(os.path.join(outputDir, 'masks', id, extractionClass)+' is not a valid path')
                         if otherClassNames:
-                            if type(otherClassNames) == str:
+                            if otherClassNames == 'discernFromClassesToExtract':
+                                for extraClass in extraClasses:
+                                    if type(extraClass) != str:
+                                        raise ValueError('Class to extract not found in annotations '+str(extraClass)+' is not a string.')
+                                    try:
+                                        os.makedirs(os.path.join(outputDir, 'masks', id, extraClass), exist_ok=True)
+                                    except:
+                                        raise ValueError(os.path.join(outputDir, 'masks', id, extraClass)+' is not a valid path')
+                            elif type(otherClassNames) == str:
                                 try:
                                     os.makedirs(os.path.join(outputDir, 'masks', id, otherClassNames), exist_ok=True)
                                 except:
