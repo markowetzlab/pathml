@@ -980,22 +980,18 @@ class Slide:
             for key, value in self.tileDictionary[list(self.tileDictionary.keys())[0]].items():
                 if 'Overlap' in key:
                     extractionClasses.append(key)
-        elif type(classesToExtract) == list:
-            extractionClasses = [classToExtract+'Overlap' for classToExtract in classesToExtract]
-            for extractionClass in extractionClasses:
+        elif (type(classesToExtract) == list) or (type(classesToExtract) == str):
+            if type(classesToExtract) == str:
+                classesToExtract = [classesToExtract]
+            for classToExtract in classesToExtract:
+                extractionClass = classToExtract+'Overlap'
                 if extractionClass not in self.tileDictionary[list(self.tileDictionary.keys())[0]]:
                     if  otherClassNames == 'discernFromClassesToExtract':
                         extraClasses.append(extractionClass)
                     else:
                         raise ValueError(extractionClass+' not found in tile dictionary')
-        elif type(classesToExtract) == str:
-            extractionClasses = [classesToExtract+'Overlap']
-            if extractionClasses[0] not in self.tileDictionary[list(self.tileDictionary.keys())[0]]:
-                if otherClassNames == 'discernFromClassesToExtract':
-                    extraClasses.append(extractionClass)
                 else:
-                    raise ValueError(extractionClasses[0]+' not found in tile dictionary')
-
+                    extractionClasses.append(extractionClass)
         else:
             raise ValueError("classesToExtract must be a string or list of strings")
 
