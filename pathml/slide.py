@@ -120,7 +120,7 @@ class Slide:
                 'Whole-slide image properties could not be imported')
         else:
             if 'vips-loader' not in self.slideProperties:
-                print("Warning: 'vips-loader' not present in slide properties; verify independently that slide has loaded properly.")
+                raise Warning("'vips-loader' not present in slide properties; verify independently that slide has loaded properly.")
             else:
                 if self.slideProperties['vips-loader'] != 'openslideload':
                     raise TypeError(
@@ -576,7 +576,7 @@ class Slide:
             return len(self.suitableTileAddresses(foregroundLevelThreshold=foregroundLevelThreshold, tissueLevelThreshold=tissueLevelThreshold))
 
     def addAnnotations(self, annotationFilePath, classesToAdd=False, negativeClass=False, level=0,
-        overwriteExistingAnnotations=False, mergeOverlappingAnnotationsOfSameClass=True, acceptMultiPolygonAnnotations=False):
+        overwriteExistingAnnotations=False, mergeOverlappingAnnotationsOfSameClass=True, acceptMultiPolygonAnnotations=True):
         """A function that adds the overlap between all (desired) classes present in an annotation file and each tile in the tile dictionary
         Annotations within groups in ASAP are taken to be within one class, where the name of the ASAP group is the name of the class; similarly,
         annotations within classes in QuPath are taken to be within one class, where the name of the QuPath class is the name of the class.
@@ -593,7 +593,7 @@ class Slide:
             level (int, optional): the level of the WSI pyramid to make use of. Default is 0.
             overwriteExistingAnnotations (Boolean, optional): whether to overwrite any preexisting annotations in the tile dictionary. Default is False.
             mergeOverlappingAnnotationsOfSameClass (Boolean, optional): whether to automatically merge annotations of the same class that overlap into one polygon. Default is True.
-            acceptMultiPolygonAnnotations (Boolean, optional): whether or not to accept annotations that parse into MultiPolygons using Shapely. Default is False and users are strongly discouraged from setting it to True.
+            acceptMultiPolygonAnnotations (Boolean, optional): whether or not to accept annotations that parse into MultiPolygons using Shapely. Multipolygons tend to arise when there are small self-overlapping regions like loops in annotations. If this argument is True, then the polygon with the largest area among those constituting the multipolygon created from one annotation will be retained, and the others will not be used. Default is True.
 
         Example:
             pathml_slide.addAnnotations("/path/to/annotations.xml", negativeClass="negative")
@@ -751,8 +751,8 @@ class Slide:
 
                 polys = []
                 for annotationCoordinates in annotation['geometry']['coordinates']:
-                #annotationCoordinates = annotation['geometry']['coordinates'][0]
                     if isinstance(annotationCoordinates[0][0], list):
+                        raise Warning('Annotation parses into a multipolygon; this likely means that a small loop is present. Set acceptMultiPolygonAnnotations to False to throw an error. Identifying largest component polygon and discarding the rest...')
                         for subPolyCoordinates in annotationCoordinates:
                             polygon = []
                             for coordinate in subPolyCoordinates:
@@ -767,8 +767,6 @@ class Slide:
                                 raise ValueError('Annotation cannot be made into a polygon')
                             polys.append(poly)
                     else:
-                    #print('ONE ANNOTATION OBJECT:')
-                    #print(annotationCoordinates)
                         polygon = []
                         for coordinate in annotationCoordinates:
                             x_coord = coordinate[0]
@@ -793,24 +791,8 @@ class Slide:
                             max_poly_area = single_poly.area
                             poly = single_poly
 
-                # Make sure the annotation produced a polygon
-                #if poly.geom_type != 'Polygon':
-                #    if poly.geom_type == 'MultiPolygon':
-                #        if not acceptMultiPolygonAnnotations:
-                #            for i, compPoly in enumerate(list(poly)):
-                #                print('Component polygon '+str(i+1)+' centroid / area: ('+str(compPoly.centroid.x)+', '+str(slideHeight-compPoly.centroid.y)+') / '+str(compPoly.area))
-                #            raise ValueError('Annotation with centroid ('+str(poly.centroid.x)+', '+str(slideHeight-poly.centroid.y)+
-                #                ') produces a Shapely '+poly.geom_type+' instead of a polygon; check to see if it self-intersects. See above for the centroids of the component Polygons of the MultiPolygon.')
-                #    else:
-                #        raise ValueError('Annotation with centroid ('+str(poly.centroid.x)+', '+str(slideHeight-poly.centroid.y)+
-                #            ') produces a Shapely '+poly.geom_type+' instead of a polygon; check to see if it self-intersects.')
-
                 if (negativeClass) and (annotationClass == negativeClass):
                     negativePolys.append(poly)
-                #else:
-                #    if poly.geom_type == 'MultiPolygon':
-                #        for componentPoly in list(poly):
-                #            classPolys[annotationClass].append(componentPoly)
                 else:
                     classPolys[annotationClass].append(poly)
 
@@ -821,7 +803,7 @@ class Slide:
             classMultiPolys = {ancl:geometry.MultiPolygon(ply) for (ancl,ply) in classPolys.items()}
 
         if (negativeClass) and (len(negativePolys) == 0):
-            print('Warning: 0 '+negativeClass+' annotations found, but negativeClass assigned a value')
+            raise Warning('0 '+negativeClass+' annotations found, but negativeClass assigned a value')
         elif (negativeClass):
             print(str(len(negativePolys))+' '+negativeClass+' annotation(s) found')
 
@@ -1075,9 +1057,9 @@ class Slide:
                 raise ValueError('If numTilesToExtractPerClass is an integer, it must be greater than 0')
             for extractionClass in extractionClasses:
                 if len(annotatedTileAddresses[extractionClass]) == 0:
-                    print('Warning: 0 suitable '+extractionClass+' tiles found')
+                    raise Warning('0 suitable '+extractionClass+' tiles found')
                 if len(annotatedTileAddresses[extractionClass]) < numTilesToExtractPerClass:
-                    print('Warning: '+str(len(annotatedTileAddresses[extractionClass]))+' suitable '+extractionClass+' tiles found but requested '+str(numTilesToExtractPerClass)+' tiles to extract. Extracting all suitable tiles...')
+                    raise Warning(str(len(annotatedTileAddresses[extractionClass]))+' suitable '+extractionClass+' tiles found but requested '+str(numTilesToExtractPerClass)+' tiles to extract. Extracting all suitable tiles...')
                     annotatedTilesToExtract[extractionClass] = annotatedTileAddresses[extractionClass]
                 else:
                     annotatedTilesToExtract[extractionClass] = random.sample(annotatedTileAddresses[extractionClass], numTilesToExtractPerClass)
@@ -1085,9 +1067,9 @@ class Slide:
         elif numTilesToExtractPerClass == 'all':
             for extractionClass in extractionClasses:
                 if len(annotatedTileAddresses[extractionClass]) == 0:
-                    print('Warning: 0 suitable '+extractionClass+' tiles found')
+                    raise Warning('0 suitable '+extractionClass+' tiles found')
                 if len(annotatedTileAddresses[extractionClass]) > 500:
-                    print('Warning: '+str(len(annotatedTileAddresses[extractionClass]))+' suitable '+extractionClass+' tiles found')
+                    raise Warning(str(len(annotatedTileAddresses[extractionClass]))+' suitable '+extractionClass+' tiles found')
                 annotatedTilesToExtract[extractionClass] = annotatedTileAddresses[extractionClass]
 
         elif type(numTilesToExtractPerClass) == dict:
@@ -1096,14 +1078,14 @@ class Slide:
                     raise Warning('Class '+ec+' present as a key in numTilesToExtractPerClass dictionary but absent from the tileDictionary')
             for extractionClass in extractionClasses:
                 if len(annotatedTileAddresses[extractionClass]) == 0:
-                    print('Warning: 0 suitable '+extractionClass+' tiles found')
+                    raise Warning('0 suitable '+extractionClass+' tiles found')
                 if extractionClass not in numTilesToExtractPerClass:
                     raise ValueError(extractionClass+' not present in the numTilesToExtractPerClass dictionary')
                 numTiles = numTilesToExtractPerClass[extractionClass]
                 if (type(numTiles) != int) or (numTiles <= 0):
                     raise ValueError(extractionClass+' does not have a positive integer set as its value in the numTilesToExtractPerClass dictionary')
                 if len(annotatedTileAddresses[extractionClass]) < numTiles:
-                    print('Warning: '+str(len(annotatedTileAddresses[extractionClass]))+' suitable '+extractionClass+' tiles found but requested '+str(numTiles)+' tiles to extract. Extracting all suitable tiles...')
+                    raise Warning(str(len(annotatedTileAddresses[extractionClass]))+' suitable '+extractionClass+' tiles found but requested '+str(numTiles)+' tiles to extract. Extracting all suitable tiles...')
                     annotatedTilesToExtract[extractionClass] = annotatedTileAddresses[extractionClass]
                 else:
                     annotatedTilesToExtract[extractionClass] = random.sample(annotatedTileAddresses[extractionClass], numTiles)
@@ -1235,7 +1217,7 @@ class Slide:
             raise Warning(returnOnlyNumTilesFromThisClass+' not found in tile dictionary')
 
         if tileCounter == 0:
-            print('Warning: 0 suitable aannotated tiles found across all classes; making no tile directories and returning zeroes')
+            raise Warning('0 suitable aannotated tiles found across all classes; making no tile directories and returning zeroes')
 
         if returnTileStats:
             if tileDirName:
@@ -1319,9 +1301,9 @@ class Slide:
                 unannotatedTileAddresses.append(address)
 
         if len(unannotatedTileAddresses) == 0:
-            print('Warning: 0 unannotated tiles found; making no tile directories and returning zeroes')
+            raise Warning('0 unannotated tiles found; making no tile directories and returning zeroes')
         if len(unannotatedTileAddresses) < numTilesToExtract:
-            print('Warning: '+str(len(unannotatedTileAddresses))+' unannotated tiles found but requested '+str(numTilesToExtract)+' tiles to extract. Extracting all suitable tiles...')
+            raise Warning(str(len(unannotatedTileAddresses))+' unannotated tiles found but requested '+str(numTilesToExtract)+' tiles to extract. Extracting all suitable tiles...')
             unannotatedTilesToExtract = unannotatedTileAddresses
         else:
             unannotatedTilesToExtract = random.sample(unannotatedTileAddresses, numTilesToExtract)
@@ -2128,7 +2110,7 @@ class Slide:
                 raise ValueError('No classification predictions found in Slide. Use inferClassifier() to generate them.')
 
         if not self.hasAnnotations():
-            print("Warning: no annotations found in Slide. All tiles in Slide will be assumed to be negative for "+classToThreshold+". Run addAnnotations() if there should be annotations in this Slide.")
+            raise Warning("No annotations found in Slide. All tiles in Slide will be assumed to be negative for "+classToThreshold+". Run addAnnotations() if there should be annotations in this Slide.")
 
         if type(probabilityThresholds) in [float, int]:
             pT = [probabilityThresholds]
@@ -2212,7 +2194,7 @@ class Slide:
                 raise ValueError('No segmentation predictions found in Slide. Use inferSegmenter() to generate them.')
 
         if not self.hasAnnotations():
-            print("Warning: no annotations found in Slide. All tiles in Slide will be assumed to be negative for "+classToThreshold+". Run addAnnotations() if there should be annotations in this Slide.")
+            raise Warning("No annotations found in Slide. All tiles in Slide will be assumed to be negative for "+classToThreshold+". Run addAnnotations() if there should be annotations in this Slide.")
 
         if type(probabilityThresholds) in [float, int]:
             pT = [probabilityThresholds]
