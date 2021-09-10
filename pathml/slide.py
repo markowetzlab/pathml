@@ -717,11 +717,12 @@ class Slide:
 
             for annotation in allAnnotations:
                 if annotation['geometry']['type'] != 'Polygon':
-                    raise ValueError('Found annotation with initial point ('+
-                        str(annotation['geometry']['coordinates'][0][0][0][0])+
-                        ','+str(annotation['geometry']['coordinates'][0][0][0][1])+
-                        ') in '+annotationClass+
-                        ' class that was not a polygon in JSON file '+annotationFilePath)
+                    if not acceptMultiPolygonAnnotations:
+                        raise ValueError('Found annotation with initial point ('+
+                            str(annotation['geometry']['coordinates'][0][0][0][0])+
+                            ','+str(annotation['geometry']['coordinates'][0][0][0][1])+
+                            ') in '+annotationClass+
+                            ' class that was not a polygon in JSON file '+annotationFilePath)
 
                 try:
                     annotationClass = annotation['properties']['classification']['name']
