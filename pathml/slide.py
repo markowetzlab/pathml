@@ -746,40 +746,52 @@ class Slide:
                         classPolys[annotationClass] = []
 
                 if len(annotation['geometry']['coordinates']) > 1:
-                    raise ValueError('Multiple sets of coordinates found for an annotation')
-                annotationCoordinates = annotation['geometry']['coordinates'][0]
-                polygon = []
-                for coordinate in annotationCoordinates:
-                    x_coord = coordinate[0]
-                    y_coord = coordinate[1]
-                    polygon.append((float(x_coord)*annotationScalingFactor, float(y_coord)*annotationScalingFactor))
-                polygonNp = np.asarray(polygon)
-                polygonNp[:,1] = slideHeight-polygonNp[:,1]
-                try:
-                    poly = geometry.Polygon(polygonNp).buffer(0)
-                except:
-                    raise ValueError('Annotation cannot be made into a polygon')
+                    if not acceptMultiPolygonAnnotations:
+                        raise ValueError('Multiple sets of coordinates found for an annotation')
+
+                polys = []
+                for annotationCoordinates in annotation['geometry']['coordinates']:
+                #annotationCoordinates = annotation['geometry']['coordinates'][0]
+                    polygon = []
+                    for coordinate in annotationCoordinates:
+                        x_coord = coordinate[0]
+                        y_coord = coordinate[1]
+                        polygon.append((float(x_coord)*annotationScalingFactor, float(y_coord)*annotationScalingFactor))
+                    polygonNp = np.asarray(polygon)
+                    polygonNp[:,1] = slideHeight-polygonNp[:,1]
+                    try:
+                        poly = geometry.Polygon(polygonNp).buffer(0)
+                    except:
+                        raise ValueError('Annotation cannot be made into a polygon')
+                    polys.append(poly)
+
+                max_poly_area = 0
+                poly = polys[0]
+                for single_poly in polys:
+                    if single_poly.area > max_poly_area:
+                        max_poly_area = single_poly.area
+                        poly = single_poly
 
                 # Make sure the annotation produced a polygon
-                if poly.geom_type != 'Polygon':
-                    if poly.geom_type == 'MultiPolygon':
-                        if not acceptMultiPolygonAnnotations:
-                            for i, compPoly in enumerate(list(poly)):
-                                print('Component polygon '+str(i+1)+' centroid / area: ('+str(compPoly.centroid.x)+', '+str(slideHeight-compPoly.centroid.y)+') / '+str(compPoly.area))
-                            raise ValueError('Annotation with centroid ('+str(poly.centroid.x)+', '+str(slideHeight-poly.centroid.y)+
-                                ') produces a Shapely '+poly.geom_type+' instead of a polygon; check to see if it self-intersects. See above for the centroids of the component Polygons of the MultiPolygon.')
-                    else:
-                        raise ValueError('Annotation with centroid ('+str(poly.centroid.x)+', '+str(slideHeight-poly.centroid.y)+
-                            ') produces a Shapely '+poly.geom_type+' instead of a polygon; check to see if it self-intersects.')
+                #if poly.geom_type != 'Polygon':
+                #    if poly.geom_type == 'MultiPolygon':
+                #        if not acceptMultiPolygonAnnotations:
+                #            for i, compPoly in enumerate(list(poly)):
+                #                print('Component polygon '+str(i+1)+' centroid / area: ('+str(compPoly.centroid.x)+', '+str(slideHeight-compPoly.centroid.y)+') / '+str(compPoly.area))
+                #            raise ValueError('Annotation with centroid ('+str(poly.centroid.x)+', '+str(slideHeight-poly.centroid.y)+
+                #                ') produces a Shapely '+poly.geom_type+' instead of a polygon; check to see if it self-intersects. See above for the centroids of the component Polygons of the MultiPolygon.')
+                #    else:
+                #        raise ValueError('Annotation with centroid ('+str(poly.centroid.x)+', '+str(slideHeight-poly.centroid.y)+
+                #            ') produces a Shapely '+poly.geom_type+' instead of a polygon; check to see if it self-intersects.')
 
                 if (negativeClass) and (annotationClass == negativeClass):
                     negativePolys.append(poly)
+                #else:
+                #    if poly.geom_type == 'MultiPolygon':
+                #        for componentPoly in list(poly):
+                #            classPolys[annotationClass].append(componentPoly)
                 else:
-                    if poly.geom_type == 'MultiPolygon':
-                        for componentPoly in list(poly):
-                            classPolys[annotationClass].append(componentPoly)
-                    else:
-                        classPolys[annotationClass].append(poly)
+                    classPolys[annotationClass].append(poly)
 
         # Make a Shapely MultiPolygon for each class
         if mergeOverlappingAnnotationsOfSameClass:
