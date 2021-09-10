@@ -752,6 +752,8 @@ class Slide:
                 polys = []
                 for annotationCoordinates in annotation['geometry']['coordinates']:
                 #annotationCoordinates = annotation['geometry']['coordinates'][0]
+                    print('ONE ANNOTATION OBJECT:')
+                    print(annotationCoordinates)
                     polygon = []
                     for coordinate in annotationCoordinates:
                         x_coord = coordinate[0]
