@@ -752,27 +752,46 @@ class Slide:
                 polys = []
                 for annotationCoordinates in annotation['geometry']['coordinates']:
                 #annotationCoordinates = annotation['geometry']['coordinates'][0]
-                    print('ONE ANNOTATION OBJECT:')
-                    print(annotationCoordinates)
-                    polygon = []
-                    for coordinate in annotationCoordinates:
-                        x_coord = coordinate[0]
-                        y_coord = coordinate[1]
-                        polygon.append((float(x_coord)*annotationScalingFactor, float(y_coord)*annotationScalingFactor))
-                    polygonNp = np.asarray(polygon)
-                    polygonNp[:,1] = slideHeight-polygonNp[:,1]
-                    try:
-                        poly = geometry.Polygon(polygonNp).buffer(0)
-                    except:
-                        raise ValueError('Annotation cannot be made into a polygon')
-                    polys.append(poly)
+                    if isinstance(annotationCoordinates[0][0], list):
+                        for subPolyCoordinates in annotationCoordinates:
+                            polygon = []
+                            for coordinate in subPolyCoordinates:
+                                x_coord = coordinate[0]
+                                y_coord = coordinate[1]
+                                polygon.append((float(x_coord)*annotationScalingFactor, float(y_coord)*annotationScalingFactor))
+                            polygonNp = np.asarray(polygon)
+                            polygonNp[:,1] = slideHeight-polygonNp[:,1]
+                            try:
+                                poly = geometry.Polygon(polygonNp).buffer(0)
+                            except:
+                                raise ValueError('Annotation cannot be made into a polygon')
+                            polys.append(poly)
+                    else:
+                    #print('ONE ANNOTATION OBJECT:')
+                    #print(annotationCoordinates)
+                        polygon = []
+                        for coordinate in annotationCoordinates:
+                            x_coord = coordinate[0]
+                            y_coord = coordinate[1]
+                            polygon.append((float(x_coord)*annotationScalingFactor, float(y_coord)*annotationScalingFactor))
+                        polygonNp = np.asarray(polygon)
+                        polygonNp[:,1] = slideHeight-polygonNp[:,1]
+                        try:
+                            poly = geometry.Polygon(polygonNp).buffer(0)
+                        except:
+                            raise ValueError('Annotation cannot be made into a polygon')
+                        polys.append(poly)
 
-                max_poly_area = 0
+
                 poly = polys[0]
-                for single_poly in polys:
-                    if single_poly.area > max_poly_area:
-                        max_poly_area = single_poly.area
-                        poly = single_poly
+                if len(polys) > 1:
+                    print(str(len(polys))+' polygons made from one annotation')
+                    max_poly_area = 0
+                    for single_poly in polys:
+                        print('Area of single subpolygon: '+str(single_poly.area))
+                        if single_poly.area > max_poly_area:
+                            max_poly_area = single_poly.area
+                            poly = single_poly
 
                 # Make sure the annotation produced a polygon
                 #if poly.geom_type != 'Polygon':
