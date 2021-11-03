@@ -18,7 +18,7 @@ sys.path.insert(0, os.path.abspath('../..'))
 
 # -- Project information -----------------------------------------------------
 
-project = 'pathml'
+project = 'PathML'
 copyright = '2021, Adam Berman, William Orchard, Marcel Gehrung'
 author = 'Adam Berman, William Orchard, Marcel Gehrung'
 
@@ -31,8 +31,21 @@ release = '0.0.1'
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = ['sphinx.ext.autodoc', 'autoapi.extension'
+extensions = [
+    'sphinx.ext.autodoc',
+    'nbsphinx',
+    'nbsphinx_link',
+    'sphinx.ext.napoleon',
+    'sphinx.ext.imgmath',
+    'IPython.sphinxext.ipython_console_highlighting',
+    'autoapi.extension',
+    'sphinx_copybutton'
 ]
+
+autodoc_default_options = {
+    'members': True,
+    'undoc-members': True
+}
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -40,9 +53,9 @@ templates_path = ['_templates']
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
-exclude_patterns = []
+exclude_patterns = ['build']
 
-autoapi_type = 'python'
+#autoapi_type = 'python'
 autoapi_dirs = ['../../pathml']
 autoapi_generate_api_docs = False
 
@@ -53,6 +66,8 @@ autoapi_generate_api_docs = False
 # a list of builtin themes.
 #
 html_theme = 'sphinx_rtd_theme'
+
+html_show_sphinx = False
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
