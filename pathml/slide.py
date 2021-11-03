@@ -45,7 +45,7 @@ class Slide:
     but not limited to tissue detection and annotation, and from which tiles
     from whole-slide images can be extracted.
 
-    :param slideFilePath: A path to a WSI (to make from scratch) or to a .pml file (to reload a saved :class:`pathml.Slide` object, see :func:`pathml.Slide.save`)
+    :param slideFilePath: A path to a WSI (to make from scratch) or to a .pml file (to reload a saved :class:`pathml.slide.Slide` object, see :meth:`pathml.slide.Slide.save`)
     :type slideFilePath: str
     :param newSlideFilePath:  If loading a .pml file and the location of the WSI has changed, the new path to WSI can be inputted here. Defaults to False
     :type newSlideFilePath: str, optional

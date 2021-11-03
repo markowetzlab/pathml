@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>pathml package &mdash; pathml 0.0.1 documentation</title>
+  <title>Documentation &mdash; pathml 0.0.1 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -38,13 +38,8 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="#">pathml package</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#submodules">Submodules</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#module-pathml.analysis">pathml.analysis module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#module-pathml.annotation">pathml.annotation module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#module-pathml.processor">pathml.processor module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#module-pathml.slide">pathml.slide module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#module-pathml">Module contents</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Documentation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#the-slide-class">The <code class="docutils literal notranslate"><span class="pre">Slide</span></code> class</a></li>
 </ul>
 </li>
 </ul>
@@ -63,7 +58,7 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
-      <li>pathml package</li>
+      <li>Documentation</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/pathml.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -73,70 +68,10 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="pathml-package">
-<h1>pathml package<a class="headerlink" href="#pathml-package" title="Permalink to this headline"></a></h1>
-<section id="submodules">
-<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline"></a></h2>
-</section>
-<section id="module-pathml.analysis">
-<span id="pathml-analysis-module"></span><h2>pathml.analysis module<a class="headerlink" href="#module-pathml.analysis" title="Permalink to this headline"></a></h2>
-<dl class="py class">
-<dt class="sig sig-object py" id="pathml.analysis.Analysis">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">pathml.analysis.</span></span><span class="sig-name descname"><span class="pre">Analysis</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tileDictionaryReference</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pathml.analysis.Analysis" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<dl class="py method">
-<dt class="sig sig-object py" id="pathml.analysis.Analysis.generateForegroundMap">
-<span class="sig-name descname"><span class="pre">generateForegroundMap</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pathml.analysis.Analysis.generateForegroundMap" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="pathml.analysis.Analysis.generateInferenceMap">
-<span class="sig-name descname"><span class="pre">generateInferenceMap</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">predictionSelector</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">predictionKey</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'prediction'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pathml.analysis.Analysis.generateInferenceMap" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="pathml.analysis.Analysis.iterateTiles">
-<span class="sig-name descname"><span class="pre">iterateTiles</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pathml.analysis.Analysis.iterateTiles" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-</section>
-<section id="module-pathml.annotation">
-<span id="pathml-annotation-module"></span><h2>pathml.annotation module<a class="headerlink" href="#module-pathml.annotation" title="Permalink to this headline"></a></h2>
-<dl class="py class">
-<dt class="sig sig-object py" id="pathml.annotation.Annotation">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">pathml.annotation.</span></span><span class="sig-name descname"><span class="pre">Annotation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parentSlide</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maskingMode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'inverse'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pathml.annotation.Annotation" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<dl class="py method">
-<dt class="sig sig-object py" id="pathml.annotation.Annotation.loadAnnotationFile">
-<span class="sig-name descname"><span class="pre">loadAnnotationFile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">annotationFile</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fileType</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pathml.annotation.Annotation.loadAnnotationFile" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-</section>
-<section id="module-pathml.processor">
-<span id="pathml-processor-module"></span><h2>pathml.processor module<a class="headerlink" href="#module-pathml.processor" title="Permalink to this headline"></a></h2>
-<dl class="py class">
-<dt class="sig sig-object py" id="pathml.processor.Processor">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">pathml.processor.</span></span><span class="sig-name descname"><span class="pre">Processor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">slideObject</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pathml.processor.Processor" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<dl class="py method">
-<dt class="sig sig-object py" id="pathml.processor.Processor.adoptKeyFromTileDictionary">
-<span class="sig-name descname"><span class="pre">adoptKeyFromTileDictionary</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">upsampleFactor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pathml.processor.Processor.adoptKeyFromTileDictionary" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="pathml.processor.Processor.applyModel">
-<span class="sig-name descname"><span class="pre">applyModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">modelZip</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">predictionKey</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'prediction'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">numWorkers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">16</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pathml.processor.Processor.applyModel" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-</section>
-<section id="module-pathml.slide">
-<span id="pathml-slide-module"></span><h2>pathml.slide module<a class="headerlink" href="#module-pathml.slide" title="Permalink to this headline"></a></h2>
+  <section id="documentation">
+<h1>Documentation<a class="headerlink" href="#documentation" title="Permalink to this headline"></a></h1>
+<section id="the-slide-class">
+<h2>The <code class="docutils literal notranslate"><span class="pre">Slide</span></code> class<a class="headerlink" href="#the-slide-class" title="Permalink to this headline"></a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="pathml.slide.Slide">
 <em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">pathml.slide.</span></span><span class="sig-name descname"><span class="pre">Slide</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">slideFilePath</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">newSlideFilePath</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">level</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pathml.slide.Slide" title="Permalink to this definition"></a></dt>
@@ -148,7 +83,7 @@ from whole-slide images can be extracted.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>slideFilePath</strong> (<em>str</em>) – A path to a WSI (to make from scratch) or to a .pml file (to reload a saved <code class="xref py py-class docutils literal notranslate"><span class="pre">pathml.Slide</span></code> object, see <code class="xref py py-func docutils literal notranslate"><span class="pre">pathml.Slide.save()</span></code>)</p></li>
+<li><p><strong>slideFilePath</strong> (<em>str</em>) – A path to a WSI (to make from scratch) or to a .pml file (to reload a saved <a class="reference internal" href="#pathml.slide.Slide" title="pathml.slide.Slide"><code class="xref py py-class docutils literal notranslate"><span class="pre">pathml.slide.Slide</span></code></a> object, see <a class="reference internal" href="#pathml.slide.Slide.save" title="pathml.slide.Slide.save"><code class="xref py py-meth docutils literal notranslate"><span class="pre">pathml.slide.Slide.save()</span></code></a>)</p></li>
 <li><p><strong>newSlideFilePath</strong> (<em>str</em><em>, </em><em>optional</em>) – If loading a .pml file and the location of the WSI has changed, the new path to WSI can be inputted here. Defaults to False</p></li>
 <li><p><strong>level</strong> (<em>int</em><em>, </em><em>optional</em>) – The level of the WSI pyramid at which to operate on; 0 is the highest resolution and default and how many levels are present above that depends on the WSI. Defaults to 0</p></li>
 <li><p><strong>verbose</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to output a verbose output. Defaults to False.</p></li>
@@ -724,14 +659,6 @@ folder (string, optional): the path to the directory where the deep tissue detec
 
 </dd></dl>
 
-<dl class="py function">
-<dt class="sig sig-object py" id="pathml.slide.unwrap_self">
-<span class="sig-prename descclassname"><span class="pre">pathml.slide.</span></span><span class="sig-name descname"><span class="pre">unwrap_self</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">arg</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwarg</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pathml.slide.unwrap_self" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-</section>
-<section id="module-pathml">
-<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-pathml" title="Permalink to this headline"></a></h2>
 </section>
 </section>
 
