@@ -42,7 +42,7 @@ templates_path = ['_templates']
 # This pattern also affects html_static_path and html_extra_path.
 exclude_patterns = []
 
-
+autoapi_type = 'python'
 autoapi_dirs = ['../../pathml']
 autoapi_generate_api_docs = False
 
