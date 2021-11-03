@@ -45,11 +45,14 @@ class Slide:
     but not limited to tissue detection and annotation, and from which tiles
     from whole-slide images can be extracted.
 
-    Args:
-        slideFilePath (string): path to a WSI (to make from scratch) or to a .pml file (to reload a saved Slide object, see save())
-        newSlideFilePath (string, optional): if loading a .pml file and the location of the WSI has changed, the new path to WSI can be inputted here
-        level (int, optional): the level of the WSI pyramid at which to operate on; 0 is the highest resolution and default and how many levels are present above that depends on the WSI
-        verbose (Boolean, optional): whether to output a verbose output. Default is false.
+    :param slideFilePath: A path to a WSI (to make from scratch) or to a .pml file (to reload a saved :class:`pathml.Slide` object, see :func:`pathml.Slide.save`)
+    :type slideFilePath: str
+    :param newSlideFilePath:  If loading a .pml file and the location of the WSI has changed, the new path to WSI can be inputted here. Defaults to False
+    :type newSlideFilePath: str, optional
+    :param level: The level of the WSI pyramid at which to operate on; 0 is the highest resolution and default and how many levels are present above that depends on the WSI. Defaults to 0
+    :type level: int, optional
+    :param verbose: Whether to output a verbose output. Defaults to False.
+    :type verbose: bool, optional
     """
 
     __format_to_dtype = {
@@ -83,7 +86,8 @@ class Slide:
     # If slideFilePath can be a path to a WSI (to make from scratch),
     # or a path to a .pml file (to make from a pre-existing pathml Slide saved with save())
     def __init__(self, slideFilePath, newSlideFilePath=False, level=0, verbose=False):
-
+        """Constructor method
+        """
         self.__verbose = verbose
 
         if slideFilePath[-4:] == '.pml': # initing from .pml file
@@ -157,13 +161,12 @@ class Slide:
         """A function to set the properties of the tile dictionary in a Slide object.
         Should be the first function called on a newly created Slide object.
 
-        Args:
-            tileSize (int): the edge length of each square tile in the requested unit
-            tileOverlap (float, optional): the fraction of a tile's edge length that overlaps the left, right, above, and below tiles. Default is 0.
-            unit (string, optional): the unit to measure tileSize by. Default is 'px' for pixels and no other units are current supported
-
-        Example:
-            pathml_slide.setTileProperties(400)
+        :param tileSize: The edge length of each square tile in the requested unit
+        :type tileSize: int
+        :param tileOverlap: The fraction of a tile's edge length that overlaps the left, right, above, and below tiles. Defaults to 0
+        :type tileOverlap: int, optional
+        :param unit: The unit to measure tileSize by. Defaults to px for pixels and no other units are current supported
+        :type unit: str, optional
         """
 
         self.regionWorker = pv.Region.new(self.slide)
@@ -1559,21 +1562,6 @@ class Slide:
             foregroundLevelThreshold (string or int or float, optional): if defined as an int, only infers trainedModel on tiles with a 0-100 foregroundLevel value less or equal to than the set value (0 is a black tile, 100 is a white tile). Only infers on Otsu's method-passing tiles if set to 'otsu', or triangle algorithm-passing tiles if set to 'triangle'. Default is not to filter on foreground at all.
             tissueLevelThreshold (Boolean, optional): if defined, only infers trainedModel on tiles with a 0 to 1 tissueLevel probability greater than or equal to the set value. Default is False.
             overwriteExistingClassifications (Boolean, optional): whether to overwrite any existing classification inferences if they are already present in the tile dictionary. Default is False.
-
-        Example:
-            import torchvision
-            class_names = ['metastasis', 'non_metastasis']
-            trained_model = torchvision.models.vgg19_bn(pretrained=False)
-            num_ftrs = trainedModel.classifier[6].in_features
-            trained_model.classifier[6] = nn.Linear(num_ftrs, len(class_names))
-            trained_model.load_state_dict(torch.load(path_to_model_state_dict))
-            data_transforms = torchvision.transforms.Compose([
-                transforms.Resize(patch_size),
-                transforms.ToTensor(),
-                transforms.Normalize(global_channel_means.tolist(), global_channel_stds.tolist())
-            ])
-            pathml_slide.inferClassifier(trained_model, classNames=class_names,
-                                            dataTransforms=data_transforms, tissueLevelThreshold=0.995)
         """
 
         if not self.hasTileDictionary():
