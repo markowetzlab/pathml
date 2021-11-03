@@ -10,7 +10,7 @@ Welcome to pathml's documentation!
    :maxdepth: 2
    :caption: Contents:
 
-pathml
+   pathml
 
 Indices and tables
 ==================
