@@ -6,9 +6,23 @@
 Welcome to PathML's documentation!
 ==================================
 
+``PathML`` is a Python library for performing deep learning image analysis on whole-slide
+images (WSIs), including deep tissue, artefact, and background filtering, tile extraction,
+model inference, model evaluation and more. It supports both classification and segmentation
+tasks at the tile level.
+
+.. image:: _static/figure1.png
+
 .. toctree::
    :maxdepth: 2
-   :caption: API Reference
+   :caption: Installation and tutorial
+
+   installation
+   tutorial
+
+.. toctree::
+   :maxdepth: 2
+   :caption: API reference
 
    pathml
 
@@ -16,5 +30,4 @@ Indices and tables
 ==================
 
 * :ref:`genindex`
-* :ref:`modindex`
 * :ref:`search`

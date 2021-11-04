@@ -34,7 +34,7 @@ pip install -e .
 
 Learning to use PathML
 ----
-See our extensive tutorial [here](https://github.com/markowetzlab/pathml-tutorial).
+See our extensive tutorial [here](https://github.com/markowetzlab/pathml-tutorial) and our complete documentation including PathML's API reference [here](https://path-ml.readthedocs.io/).
 
 Disclaimer
 ----
