@@ -3,4 +3,4 @@ Documentation
 
 The ``Slide`` class
 *****************************
-.. autoapiclass:: pathml.Slide
+.. autoapiclass:: pathml.slide.Slide
