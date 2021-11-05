@@ -963,7 +963,7 @@ class Slide:
         if verbose: print("\n")
         return mask
 
-    def extractAnnotationTiles(self, outputDir, tileDirName=False, numTilesToExtractPerClass='all', classesToExtract=False, otherClassNames=False,
+    def extractAnnotationTiles(self, outputDir, slideName=False, numTilesToExtractPerClass='all', classesToExtract=False, otherClassNames=False,
         extractSegmentationMasks=False, tileAnnotationOverlapThreshold=0.5, foregroundLevelThreshold=False, tissueLevelThreshold=False,
         returnTileStats=True, returnOnlyNumTilesFromThisClass=False, seed=False):
         """A function to extract tiles that overlap with annotations into
@@ -971,8 +971,8 @@ class Slide:
 
         Args:
             outputDir (str): the path to the directory where the tile directory will be stored
-            tileDirName (str, optional): what to call the hightest level tile directory that will be created. Default is 'tiles'
-            numTilesToExtractPerClass (dict or int or 'all', optional): expected to be positive integer, a dictionary with class names as keys and positive integers as values, or 'all' to extract all suitable tiles for each class. Default is 'all'.
+            slideName (str, optional): the name of the slide to be used in the file names of the extracted tiles and masks. Default is Slide.slideFileName.
+            numTilesToExtractPerClass (dict or int or 'all', optional): how many suitable tiles to extract from the slide for each class; if more suitable tiles are available than are requested, tiles will be chosen at random; expected to be positive integer, a dictionary with class names as keys and positive integers as values, or 'all' to extract all suitable tiles for each class. Default is 'all'.
             classesToExtract (str or list of str, optional): defaults to extracting all classes found in the annotations, but if defined, must be a string or a list of strings of class names.
             otherClassNames (str or list of str, optional): if defined, creates an empty class directory alongside the unannotated class directory for each class name in the list (or string) for torch ImageFolder purposes. If set to 'discernFromClassesToExtract', empty class directories will be created for all classes not found in annotations. Default is False.
             extractSegmentationMasks (Bool, optional): whether to extract a 'masks' directory that is exactly parallel to the 'tiles' directory, and contains binary segmentation mask tiles for each class desired. Pixel values of 255 in these masks appear as white and indicate the presence of the class; pixel values of 0 appear as black and indicate the absence of the class. Default is False.
@@ -984,10 +984,10 @@ class Slide:
             seed (int, optional): the random seed to use for reproducible anayses. Default is not to use a seed when randomly selecting tiles.
 
         Returns:
-            dict: A dictionary containing the Slide's name, 0-1 normalized sum of channel values, the sum of the squares of channel values, and the number of tiles extracted for use in global mean and variance computation; if returnTileStats is set to False, nothing will be returned
+            dict: A dictionary containing the Slide's name, 0-1 normalized sum of channel values, the sum of the squares of channel values, and the number of tiles extracted for use in global mean and variance computation; if returnTileStats is set to False, True will be returned
 
         Example:
-            channel_data = pathml_slide.extractAnnotationTiles("/path/to/directory", numTilesToExtractPerClass=200, tissueLevelThreshold=0.995)
+            channel_data = pathml_slide.extractAnnotationTiles('/path/to/directory', numTilesToExtractPerClass=200, tissueLevelThreshold=0.995)
         """
 
         if not self.hasTileDictionary():
@@ -1001,11 +1001,11 @@ class Slide:
                 raise ValueError('Seed must be an integer')
             random.seed(seed)
         # get case ID
-        if tileDirName:
-            if type(tileDirName) != str:
-                raise ValueError("tileDirName must be a string")
+        if slideName:
+            if type(slideName) != str:
+                raise ValueError("slideName must be a string")
             else:
-                id = tileDirName
+                id = slideName
         else:
             id = self.slideFileName
 
@@ -1023,7 +1023,7 @@ class Slide:
             for classToExtract in classesToExtract:
                 extractionClass = classToExtract+'Overlap'
                 if extractionClass not in self.tileDictionary[list(self.tileDictionary.keys())[0]]:
-                    if  otherClassNames == 'discernFromClassesToExtract':
+                    if otherClassNames == 'discernFromClassesToExtract':
                         extraClasses.append(extractionClass)
                     else:
                         raise ValueError(extractionClass+' not found in tile dictionary')
@@ -1238,11 +1238,11 @@ class Slide:
             raise Warning(returnOnlyNumTilesFromThisClass+' not found in tile dictionary')
 
         if tileCounter == 0:
-            print('Warning: 0 suitable aannotated tiles found across all classes; making no tile directories and returning zeroes')
+            print('Warning: 0 suitable annotated tiles found across all classes; making no tile directories and returning zeroes')
 
         if returnTileStats:
-            if tileDirName:
-                return {'slide': tileDirName,
+            if slideName:
+                return {'slide': slideName,
                         'channel_sums': channel_sums,#np.mean(channel_means_across_tiles, axis=0).tolist(),
                         'channel_squared_sums': channel_squared_sums,#np.mean(channel_stds_across_tiles, axis=0).tolist(),
                         'num_tiles': tileCounter}
@@ -1254,14 +1254,213 @@ class Slide:
         else:
             return True
 
-    def extractRandomUnannotatedTiles(self, outputDir, tileDirName=False, numTilesToExtract=100, unannotatedClassName='unannotated', otherClassNames=False,
+
+    def extractAnnotationTilesMultiClassSegmentation(self, outputDir, slideName=False, numTilesToExtract=100, classesToExtract=False,
+        tileAnnotationOverlapThreshold=0.5, foregroundLevelThreshold=False, tissueLevelThreshold=False, returnTileStats=True, seed=False):
+        """A function to extract tiles that overlap with annotations and their
+        corresponding segmentation masks, where annotation masks are returned as
+        .npy files containing ndarray stacks (each array in the stack being one
+        class's segmentation class) for use in multi-class segmentation problems.
+
+        Args:
+            outputDir (str): the path to the directory where the tile directory will be stored
+            slideName (str, optional): the name of the slide to be used in the file names of the extracted tiles and masks. Default is Slide.slideFileName.
+            numTilesToExtractPerClass (int or 'all', optional): how many suitable tiles to extract from the slide; if more suitable tiles are available than are requested, tiles will be chosen at random; expected to be positive integer or 'all' to extract all suitable tiles for each class. Default is 'all'.
+            classesToExtract (str or list of str, optional): which classes to consider when selecting tiles and making mask stacks; defaults to extracting all classes found in the annotations, but if defined, must be a string or a list of strings of class names.
+            tileAnnotationOverlapThreshold (float, optional): a number greater than 0 and less than or equal to 1, or a dictionary of such values, with a key for each class to extract. The numbers specify the minimum fraction of a tile's area that overlaps the annotations of the classesToExtract for that tile to be extracted. The overlaps with all classesToExtract classes are summed together and if this sum is greater or equal to tileAnnotationOverlapThreshold, then the tile is extracted. Default is 0.5.
+            foregroundLevelThreshold (str or int or float, optional): if defined as an int, only extracts tiles with a 0-100 foregroundLevel value less or equal to than the set value (0 is a black tile, 100 is a white tile). Only includes Otsu's method-passing tiles if set to 'otsu', or triangle algorithm-passing tiles if set to 'triangle'. Default is not to filter on foreground at all.
+            tissueLevelThreshold (Bool, optional): if defined, only extracts tiles with a 0 to 1 tissueLevel probability greater than or equal to the set value. Default is False.
+            returnTileStats (Bool, optional): whether to return the 0-1 normalized sum of channel values, the sum of the squares of channel values, and the number of tiles extracted for use in global mean and variance computation. Default is True.
+            seed (int, optional): the random seed to use for reproducible anayses. Default is not to use a seed when randomly selecting tiles.
+
+        Returns:
+            dict: A dictionary containing the class order that the class masks appear in ndarray mask stacks, the Slide's name, 0-1 normalized sum of channel values, the sum of the squares of channel values, and the number of tiles extracted for use in global mean and variance computation; if returnTileStats is set to False, only the class mask order will be returned (a list of strings)
+
+        Example:
+            channel_data = pathml_slide.extractAnnotationTilesMultiClassSegmentation('/path/to/directory', numTilesToExtractPerClass=200, classesToExtract=['lymphocyte', 'normal', 'tumor'], tileAnnotationOverlapThreshold=0.6, tissueLevelThreshold=0.995)
+        """
+
+        if not self.hasTileDictionary():
+            raise PermissionError(
+                'setTileProperties must be called before extracting tiles')
+        if not self.hasAnnotations():
+            raise PermissionError(
+                'addAnnotations must be called before extracting tiles')
+        if seed:
+            if type(seed) != int:
+                raise ValueError('Seed must be an integer')
+            random.seed(seed)
+        # get case ID
+        if slideName:
+            if type(slideName) != str:
+                raise ValueError("slideName must be a string")
+            else:
+                id = slideName
+        else:
+            id = self.slideFileName
+
+        # get classes to extract
+        extractionClasses = []
+        if not classesToExtract:
+            for key, value in self.tileDictionary[list(self.tileDictionary.keys())[0]].items():
+                if 'Overlap' in key:
+                    extractionClasses.append(key)
+        elif (type(classesToExtract) == list) or (type(classesToExtract) == str):
+            if type(classesToExtract) == str:
+                classesToExtract = [classesToExtract]
+            for classToExtract in classesToExtract:
+                extractionClass = classToExtract+'Overlap'
+                if extractionClass not in self.tileDictionary[list(self.tileDictionary.keys())[0]]:
+                    raise ValueError(extractionClass+' not found in tile dictionary')
+                else:
+                    extractionClasses.append(extractionClass)
+        else:
+            raise ValueError("classesToExtract must be a string or list of strings")
+
+        extractionClasses = [extractionClass.split('Overlap')[0] for extractionClass in extractionClasses]
+        print('Found '+str(len(extractionClasses))+' class(es) to extract in annotations:', extractionClasses)
+
+        # Convert annotationOverlapThreshold into a dictionary (if necessary)
+        if (type(tileAnnotationOverlapThreshold) == int) or (type(tileAnnotationOverlapThreshold) == float):
+            if (tileAnnotationOverlapThreshold <= 0) or (tileAnnotationOverlapThreshold > 1):
+                raise ValueError('tileAnnotationOverlapThreshold must be greater than 0 and less than or equal to 1')
+        else:
+            raise ValueError('tileAnnotationOverlapThreshold must be an int or float greater than 0 and less than or equal to 1')
+
+        if tissueLevelThreshold:
+            if ((type(tissueLevelThreshold) != int) and (type(tissueLevelThreshold) != float)) or ((tissueLevelThreshold <= 0) or (tissueLevelThreshold > 1)):
+                raise ValueError('tissueLevelThreshold must be a number greater than zero and less than or equal to 1')
+
+        # Get tiles to extract
+        annotatedTileAddresses = [] #{extractionClass: [] for extractionClass in extractionClasses}
+
+        # Find tile addresses where the sum of the overlap of the desired classes is at least as big as tileAnnotationOverlapThreshold
+        suitable_tile_addresses = self.suitableTileAddresses(tissueLevelThreshold=tissueLevelThreshold, foregroundLevelThreshold=foregroundLevelThreshold)
+        for address in suitable_tile_addresses:
+            classOverlapSum = 0
+            for extractionClass in extractionClasses:
+                classOverlapSum += self.tileDictionary[address][extractionClass+'Overlap']
+            if classOverlapSum >= tileAnnotationOverlapThreshold:
+                annotatedTileAddresses.append(address)
+
+        # Choose from among the passing tiles to get the tiles to actually extract
+        annotatedTilesToExtract = []#{} #{extractionClass: [] for extractionClass in extractionClasses}
+        if type(numTilesToExtract) == int:
+            if numTilesToExtract <= 0:
+                raise ValueError('If numTilesToExtract is an integer, it must be greater than 0')
+            if len(annotatedTileAddresses) == 0:
+                print('Warning: 0 suitable tiles found')
+            if len(annotatedTileAddresses) < numTilesToExtract:
+                print('Warning: '+str(len(annotatedTileAddresses))+' suitable tiles found but requested '+str(numTilesToExtract)+' tiles to extract. Extracting all suitable tiles...')
+                annotatedTilesToExtract = annotatedTileAddresses
+            else:
+                annotatedTilesToExtract = random.sample(annotatedTileAddresses, numTilesToExtract)
+
+        elif numTilesToExtractPerClass == 'all':
+            if len(annotatedTileAddresses) == 0:
+                print('Warning: 0 suitable tiles found')
+            if len(annotatedTileAddresses) > 500:
+                print('Warning: '+str(len(annotatedTileAddresses))+' suitable tiles found')
+            annotatedTilesToExtract = annotatedTileAddresses
+
+        else:
+            raise ValueError("numTilesToExtract must be a positive integer or 'all'")
+
+        # Create empty class tile and mask directories
+        try:
+            os.makedirs(os.path.join(outputDir, 'tiles', id), exist_ok=True)
+        except:
+            raise ValueError(os.path.join(outputDir, 'tiles', id)+' is not a valid path')
+        try:
+            os.makedirs(os.path.join(outputDir, 'masks', id), exist_ok=True)
+        except:
+            raise ValueError(os.path.join(outputDir, 'masks', id)+' is not a valid path')
+
+        channel_sums = np.zeros(3)
+        channel_squared_sums = np.zeros(3)
+        tileCounter = 0
+        normalize_to_1max = transforms.Compose([transforms.ToTensor()])
+
+        # Extract tiles
+        print("Extracting "+str(len(annotatedTilesToExtract))+" tiles and segmentation masks...")
+        for tl in annotatedTilesToExtract:
+            #for tl in tte:
+            area = self.getTile(tl)
+            if (tissueLevelThreshold) and (foregroundLevelThreshold):
+                area.write_to_file(os.path.join(outputDir, 'tiles', id,
+                    id+'_'+str(self.tileDictionary[tl]['x'])+'x_'+str(self.tileDictionary[tl]['y'])+'y'+'_'+str(self.tileDictionary[tl]['height'])+'tilesize_'+str(int(round(self.tileDictionary[tl]['tissueLevel']*1000)))+'tissueLevel_'+str(int(round(self.tileDictionary[tl]['foregroundLevel'])))+'foregroundLevel.jpg'), Q=100)
+            elif (tissueLevelThreshold) and (not foregroundLevelThreshold):
+                area.write_to_file(os.path.join(outputDir, 'tiles', id,
+                    id+'_'+str(self.tileDictionary[tl]['x'])+'x_'+str(self.tileDictionary[tl]['y'])+'y'+'_'+str(self.tileDictionary[tl]['height'])+'tilesize_'+str(int(round(self.tileDictionary[tl]['tissueLevel']*1000)))+'tissueLevel.jpg'), Q=100)
+            elif (not tissueLevelThreshold) and (foregroundLevelThreshold):
+                area.write_to_file(os.path.join(outputDir, 'tiles', id,
+                    id+'_'+str(self.tileDictionary[tl]['x'])+'x_'+str(self.tileDictionary[tl]['y'])+'y'+'_'+str(self.tileDictionary[tl]['height'])+'tilesize_'+str(int(round(self.tileDictionary[tl]['foregroundLevel'])))+'foregroundLevel.jpg'), Q=100)
+            else:
+                area.write_to_file(os.path.join(outputDir, 'tiles', id,
+                    id+'_'+str(self.tileDictionary[tl]['x'])+'x_'+str(self.tileDictionary[tl]['y'])+'y'+'_'+str(self.tileDictionary[tl]['height'])+'tilesize.jpg'), Q=100)
+
+            tileCounter = tileCounter + 1
+            if returnTileStats:
+                nparea = self.getTile(tl, writeToNumpy=True)[...,:3] # remove transparency channel
+                nparea = normalize_to_1max(nparea).numpy() # normalize values from 0-255 to 0-1
+                local_channel_sums = np.sum(nparea, axis=(1,2))
+                local_channel_squared_sums = np.sum(np.square(nparea), axis=(1,2))
+                channel_sums = np.add(channel_sums, local_channel_sums)
+                channel_squared_sums = np.add(channel_squared_sums, local_channel_squared_sums)
+
+            # Extract multi-class segmentation masks
+            all_class_masks = []
+            for ec in extractionClasses:
+                all_class_masks.append(self.getAnnotationTileMask(tl, ec, writeToNumpy=True, acceptTilesWithoutClass=True)) # allow blank masks to returned
+
+            # Stack class masks into a 3D numpy ndarray (dimensions are: num. classes, tile pixel height, tile pixel width)
+            mask_stack = np.stack(all_class_masks, axis=0)
+
+            # Save mask stack as .npy file
+            if (tissueLevelThreshold) and (foregroundLevelThreshold):
+                np.save(os.path.join(outputDir, 'masks', id,
+                    id+'_'+str(self.tileDictionary[tl]['x'])+'x_'+str(self.tileDictionary[tl]['y'])+'y'+'_'+str(self.tileDictionary[tl]['height'])+'tilesize_'+str(int(round(self.tileDictionary[tl]['tissueLevel']*1000)))+'tissueLevel_'+str(int(round(self.tileDictionary[tl]['foregroundLevel'])))+'foregroundLevel_mask.gif'),
+                    mask_stack)
+            elif (tissueLevelThreshold) and (not foregroundLevelThreshold):
+                np.save(os.path.join(outputDir, 'masks', id,
+                    id+'_'+str(self.tileDictionary[tl]['x'])+'x_'+str(self.tileDictionary[tl]['y'])+'y'+'_'+str(self.tileDictionary[tl]['height'])+'tilesize_'+str(int(round(self.tileDictionary[tl]['tissueLevel']*1000)))+'tissueLevel_mask.gif'),
+                    mask_stack)
+            elif (not tissueLevelThreshold) and (foregroundLevelThreshold):
+                np.save(os.path.join(outputDir, 'masks', id,
+                    id+'_'+str(self.tileDictionary[tl]['x'])+'x_'+str(self.tileDictionary[tl]['y'])+'y'+'_'+str(self.tileDictionary[tl]['height'])+'tilesize_'+str(int(round(self.tileDictionary[tl]['foregroundLevel'])))+'foregroundLevel_mask.gif'),
+                    mask_stack)
+            else:
+                np.save(os.path.join(outputDir, 'masks', id,
+                    id+'_'+str(self.tileDictionary[tl]['x'])+'x_'+str(self.tileDictionary[tl]['y'])+'y'+'_'+str(self.tileDictionary[tl]['height'])+'tilesize_mask.gif'),
+                    mask_stack)
+
+        if tileCounter == 0:
+            print('Warning: 0 suitable annotated tiles found across all classes; making no tile directories and returning zeroes')
+
+        if returnTileStats:
+            if slideName:
+                return {'class_order_in_mask_stack': extractionClasses,
+                        'slide': slideName,
+                        'channel_sums': channel_sums,#np.mean(channel_means_across_tiles, axis=0).tolist(),
+                        'channel_squared_sums': channel_squared_sums,#np.mean(channel_stds_across_tiles, axis=0).tolist(),
+                        'num_tiles': tileCounter}
+            else:
+                return {'class_order_in_mask_stack': extractionClasses,
+                        'slide': self.slideFileName,
+                        'channel_sums': channel_sums,#np.mean(channel_means_across_tiles, axis=0).tolist(),
+                        'channel_squared_sums': channel_squared_sums,#np.mean(channel_stds_across_tiles, axis=0).tolist(),
+                        'num_tiles': tileCounter}
+        else:
+            return extractionClasses
+
+    def extractRandomUnannotatedTiles(self, outputDir, slideName=False, numTilesToExtract=100, unannotatedClassName='unannotated', otherClassNames=False,
         extractSegmentationMasks=False, foregroundLevelThreshold=False, tissueLevelThreshold=False, returnTileStats=True, seed=False):
         """A function to extract randomly selected tiles that don't overlap any
         annotations into directory structure amenable to torch.utils.data.ConcatDataset
 
         Args:
             outputDir (str): the path to the directory where the tile directory will be stored
-            tileDirName (str, optional): what to call the hightest level tile directory that will be created. Default is 'tiles'
+            slideName (str, optional): the name of the slide to be used in the file names of the extracted tiles and masks. Default is Slide.slideFileName.
             numTilesToExtract (int, optional): the number of random unannotated tiles to extract. Default is 50.
             unannotatedClassName (str, optional): the name that the unannotated "class" directory should be called. Default is "unannotated".
             otherClassNames (str or list of str, optional): if defined, creates an empty class directory alongside the unannotated class directory for each class name in the list (or string) for torch ImageFolder purposes
@@ -1272,10 +1471,10 @@ class Slide:
             seed (int, optional): the random seed to use for reproducible anayses. Default is not to use a seed when randomly selecting tiles.
 
         Returns:
-            dict: A dictionary containing the Slide's name, 0-1 normalized sum of channel values, the sum of the squares of channel values, and the number of tiles extracted for use in global mean and variance computation; if returnTileStats is set to False, nothing will be returned
+            dict: A dictionary containing the Slide's name, 0-1 normalized sum of channel values, the sum of the squares of channel values, and the number of tiles extracted for use in global mean and variance computation; if returnTileStats is set to False, True will be returned
 
         Example:
-            channel_data = pathml_slide.extractRandomUnannotatedTiles("/path/to/directory", numTilesToExtract=200, unannotatedClassName="non_metastasis", tissueLevelThreshold=0.995)
+            channel_data = pathml_slide.extractRandomUnannotatedTiles('/path/to/directory', numTilesToExtract=200, unannotatedClassName="non_metastasis", tissueLevelThreshold=0.995)
         """
 
         if not self.hasTileDictionary():
@@ -1288,11 +1487,11 @@ class Slide:
             random.seed(seed)
 
         # get case ID
-        if tileDirName:
-            if type(tileDirName) != str:
-                raise ValueError("tileDirName must be a string")
+        if slideName:
+            if type(slideName) != str:
+                raise ValueError("slideName must be a string")
             else:
-                id = tileDirName
+                id = slideName
         else:
             id = self.slideFileName
 
@@ -1433,8 +1632,8 @@ class Slide:
                         id+'_'+unannotatedClassName+'_'+str(self.tileDictionary[tl]['x'])+'x_'+str(self.tileDictionary[tl]['y'])+'y'+'_'+str(self.tileDictionary[tl]['height'])+'tilesize_mask.jpg'))
 
         if returnTileStats:
-            if tileDirName:
-                return {'slide': tileDirName,
+            if slideName:
+                return {'slide': slideName,
                         'channel_sums': channel_sums,#np.mean(channel_means_across_tiles, axis=0).tolist(),
                         'channel_squared_sums': channel_squared_sums,#np.mean(channel_stds_across_tiles, axis=0).tolist(),
                         'num_tiles': tileCounter}
