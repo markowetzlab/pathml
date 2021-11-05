@@ -1,7 +1,7 @@
 Installation
 ============
 
-First clone ``PathML``'s repository:
+First clone ``PathML``'s `repository <https://github.com/markowetzlab/pathml>`_:
 
 .. code-block::
 
@@ -30,8 +30,8 @@ To solve this issue, also install pyvips using conda in ``pathml-env``:
     conda install -c conda-forge pyvips
 
 
-For users who don't wish to use conda, ``PathML`` can also be installed via pip. To do so, navigate to to the `pathml` directory
-containing `setup.py`, and run the following command:
+For users who don't wish to use conda, ``PathML`` can also be installed via pip. To do so, navigate to to the ``pathml`` directory
+containing ``setup.py``, and run the following command:
 
 .. code-block::
 
